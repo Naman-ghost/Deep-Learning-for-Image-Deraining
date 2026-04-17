@@ -1,88 +1,88 @@
-# [cite_start]Deep Learning for Single Image Deraining [cite: 1]
+# Deep Learning for Single Image Deraining
 
 ## Overview
-[cite_start]This repository contains an optimized, end-to-end deep learning training pipeline for single image deraining[cite: 13]. [cite_start]The project transitions from a fragmented multi-phase training script to a unified, highly efficient approach utilizing a custom **DerainNet** architecture[cite: 13, 28]. 
+This repository contains an optimized, end-to-end deep learning training pipeline for single image deraining. The project transitions from a fragmented multi-phase training script to a unified, highly efficient approach utilizing a custom **DerainNet** architecture. 
 
-[cite_start]By implementing strict deep learning best practices—such as native-resolution random cropping, perception-driven hybrid loss functions, and automated optimization—this pipeline achieves state-of-the-art level results on the Rain100L dataset, yielding a **+6.67 dB PSNR** improvement over baseline methodologies[cite: 110].
+By implementing strict deep learning best practices—such as native-resolution random cropping, perception-driven hybrid loss functions, and automated optimization—this pipeline achieves state-of-the-art level results on the Rain100L dataset, yielding a **+6.67 dB PSNR** improvement over baseline methodologies.
 
 ---
 
 ## The Challenge
-* [cite_start]Rain streaks severely degrade image quality, reducing visibility and altering object appearances[cite: 10]. 
-* [cite_start]Degraded images negatively impact downstream computer vision tasks, such as object detection, pedestrian tracking, and autonomous driving algorithms[cite: 11]. 
+* Rain streaks severely degrade image quality, reducing visibility and altering object appearances. 
+* Degraded images negatively impact downstream computer vision tasks, such as object detection, pedestrian tracking, and autonomous driving algorithms. 
 
-[cite_start]Single image deraining is fundamentally an ill-posed inverse problem[cite: 17]. A rainy image can be modeled as a linear superimposition:
+Single image deraining is fundamentally an ill-posed inverse problem. A rainy image can be modeled as a linear superimposition:
 
-[cite_start]O = B + R [cite: 19]
+O = B + R
 
 Where:
-* [cite_start]**O** is the observed rainy image[cite: 21].
-* [cite_start]**B** is the clean background layer (our target)[cite: 22].
-* [cite_start]**R** represents the rain streak layer[cite: 23].
+* **O** is the observed rainy image.
+* **B** is the clean background layer (our target).
+* **R** represents the rain streak layer.
 
-[cite_start]**Our Goal:** Train a Convolutional Neural Network (CNN) to accurately estimate R from O, allowing us to retrieve B = O - R[cite: 24].
+**Our Goal:** Train a Convolutional Neural Network (CNN) to accurately estimate R from O, allowing us to retrieve B = O - R.
 
 ---
 
 ## Key Advancements & Methodology
 
 ### 1. Unified Architecture (DerainNet)
-[cite_start]Instead of relying on fragmented external files, the proposed approach integrates a robust Residual Network natively[cite: 31]. 
-* [cite_start]**Feature Extraction:** Initial 3x3 Convolution with PReLU activation[cite: 32].
-* [cite_start]**Deep Residual Learning:** 5 identical Residual Blocks[cite: 33]. [cite_start]It is easier for the network to learn the sparse difference (the rain streaks R) than to map directly to the complex background image (B)[cite: 34].
-* [cite_start]**Output Layer:** Reconstructs the rain mask[cite: 35]. [cite_start]The final clean image is computed precisely via B = O - R, constrained between [0.0, 1.0][cite: 36].
+Instead of relying on fragmented external files, the proposed approach integrates a robust Residual Network natively. 
+* **Feature Extraction:** Initial 3x3 Convolution with PReLU activation.
+* **Deep Residual Learning:** 5 identical Residual Blocks. It is easier for the network to learn the sparse difference (the rain streaks R) than to map directly to the complex background image (B).
+* **Output Layer:** Reconstructs the rain mask. The final clean image is computed precisely via B = O - R, constrained between [0.0, 1.0].
 
 ### 2. Native Resolution Patching (128x128)
-* [cite_start]**The Flaw of Resizing:** The baseline approach used cv2.resize() to compress full HD images into 64x64 tensors[cite: 39, 40]. [cite_start]Because rain streaks are high-frequency signals, downsampling acts as a low-pass filter, blurring and destroying the structural information the model needs to learn[cite: 41].
-* [cite_start]**Our Solution:** We extract random 128x128 spatial patches directly from the original, uncompressed input images[cite: 45, 46]. [cite_start]This preserves exact 1:1 pixel data and high-frequency rain streak edges, and inherently acts as a form of spatial data augmentation[cite: 48, 50].
+* **The Flaw of Resizing:** The baseline approach used cv2.resize() to compress full HD images into 64x64 tensors. Because rain streaks are high-frequency signals, downsampling acts as a low-pass filter, blurring and destroying the structural information the model needs to learn.
+* **Our Solution:** We extract random 128x128 spatial patches directly from the original, uncompressed input images. This preserves exact 1:1 pixel data and high-frequency rain streak edges, and inherently acts as a form of spatial data augmentation.
 
 ### 3. Perception-Driven Hybrid Loss
-[cite_start]L1 Loss (Mean Absolute Error) only enforces global color correctness and ignores spatial relationships, frequently resulting in visually blurry backgrounds[cite: 53, 54]. [cite_start]We introduce a combined loss function leveraging the Structural Similarity Index Measure (SSIM)[cite: 55]:
+L1 Loss (Mean Absolute Error) only enforces global color correctness and ignores spatial relationships, frequently resulting in visually blurry backgrounds. We introduce a combined loss function leveraging the Structural Similarity Index Measure (SSIM):
 
-[cite_start]L_total = alpha(1 - SSIM(y_hat, y)) + (1 - alpha)||y_hat - y||_1 [cite: 56]
+L_total = alpha(1 - SSIM(y_hat, y)) + (1 - alpha)||y_hat - y||_1 
 
-[cite_start]*The SSIM component penalizes the network for destroying structural information, forcing the reconstruction of sharp edges and textures (alpha = 0.84)[cite: 58].*
+*The SSIM component penalizes the network for destroying structural information, forcing the reconstruction of sharp edges and textures (alpha = 0.84).*
 
 ### 4. Optimization & Regularization Strategies
-* [cite_start]**Cosine Annealing (Automated):** Replaces clunky manual checkpoint loading[cite: 61, 62]. [cite_start]The learning rate smoothly decays following a cosine curve over 35,000 iterations[cite: 63]. [cite_start]This allows rapid convergence early on, and ultra-fine precision updates near the end to prevent gradient oscillation[cite: 64].
-* [cite_start]**Rigorous Data Augmentation:** The proposed method applies stochastic 50% Horizontal and Vertical flips from Iteration 1[cite: 67]. [cite_start]This exponentially increases the geometric diversity of rain angles[cite: 68].
+* **Cosine Annealing (Automated):** Replaces clunky manual checkpoint loading. The learning rate smoothly decays following a cosine curve over 35,000 iterations. This allows rapid convergence early on, and ultra-fine precision updates near the end to prevent gradient oscillation.
+* **Rigorous Data Augmentation:** The proposed method applies stochastic 50% Horizontal and Vertical flips from Iteration 1. This exponentially increases the geometric diversity of rain angles.
 
 ---
 
 ## Dataset & Training Setup
-* [cite_start]**Dataset:** Rain100L (Synthetic rain dataset) [cite: 72]
-  * [cite_start]Training Set: 200 image pairs (Rainy/Clean) [cite: 73]
-  * [cite_start]Testing Set: 100 image pairs for evaluation [cite: 74]
-* [cite_start]**Hardware:** NVIDIA GTX 1650 (or equivalent CUDA-enabled GPU) [cite: 76]
-* [cite_start]**Optimizer:** Adam (beta_1 = 0.9, beta_2 = 0.999) [cite: 79]
-* [cite_start]**Batch Size:** 4 [cite: 77]
-* [cite_start]**Iterations:** 35,000 Total [cite: 78]
+* **Dataset:** Rain100L (Synthetic rain dataset) 
+  * Training Set: 200 image pairs (Rainy/Clean) 
+  * Testing Set: 100 image pairs for evaluation 
+* **Hardware:** NVIDIA GTX 1650 (or equivalent CUDA-enabled GPU) 
+* **Optimizer:** Adam (beta_1 = 0.9, beta_2 = 0.999) 
+* **Batch Size:** 4 
+* **Iterations:** 35,000 Total 
 
 ---
 
-## [cite_start]Quantitative Results on Rain100L [cite: 81]
+## Quantitative Results on Rain100L 
 
-[cite_start]The proposed pipeline drastically outperforms the baseline methodology across standard evaluation metrics[cite: 82]:
+The proposed pipeline drastically outperforms the baseline methodology across standard evaluation metrics:
 
 | Methodology | PSNR (dB) ↑ | SSIM ↑ |
 | :--- | :--- | :--- |
-| **Baseline Script** (Resized, L1) | [cite_start]28.45 [cite: 83] | [cite_start]0.8612 [cite: 83] |
-| **Proposed Script** (Cropped, L1+SSIM) | [cite_start]**35.12** [cite: 83] | [cite_start]**0.9654** [cite: 83] |
-| **Net Improvement** | [cite_start]**+6.67 dB** [cite: 83] | [cite_start]**+0.1042** [cite: 83] |
+| **Baseline Script** (Resized, L1) | 28.45 | 0.8612 |
+| **Proposed Script** (Cropped, L1+SSIM) | **35.12** | **0.9654** |
+| **Net Improvement** | **+6.67 dB** | **+0.1042** |
 
-[cite_start]*Note: A PSNR increase of +6dB mathematically signifies that the mean square error has been reduced by roughly a factor of 4[cite: 84].*
+*Note: A PSNR increase of +6dB mathematically signifies that the mean square error has been reduced by roughly a factor of 4.*
 
-### [cite_start]Ablation Study: Contribution of Components [cite: 86]
-[cite_start]To prove the efficacy of our pipeline upgrades, we evaluated the individual contribution of each component incrementally[cite: 87].
+### Ablation Study: Contribution of Components 
+To prove the efficacy of our pipeline upgrades, we evaluated the individual contribution of each component incrementally.
 
 | Base Net | Crop (Not Resize) | SSIM Loss | Augmentation | PSNR | SSIM |
 | :---: | :---: | :---: | :---: | :---: | :---: |
-| [cite_start]X [cite: 88] | | | | [cite_start]28.45 [cite: 88] | [cite_start]0.8612 [cite: 88] |
-| [cite_start]X [cite: 88] | [cite_start]X [cite: 88] | | | [cite_start]31.80 [cite: 88] | [cite_start]0.9105 [cite: 88] |
-| [cite_start]X [cite: 88] | [cite_start]X [cite: 88] | [cite_start]X [cite: 88] | | [cite_start]34.05 [cite: 88] | [cite_start]0.9520 [cite: 88] |
-| [cite_start]X [cite: 88] | [cite_start]X [cite: 88] | [cite_start]X [cite: 88] | [cite_start]X [cite: 88] | [cite_start]**35.12** [cite: 88] | [cite_start]**0.9654** [cite: 88] |
+| X | | | | 28.45 | 0.8612 |
+| X | X | | | 31.80 | 0.9105 |
+| X | X | X | | 34.05 | 0.9520 |
+| X | X | X | X | **35.12** | **0.9654** |
 
-[cite_start]*Insight: Moving from squishing the image to patching the image yielded the single highest jump in performance (+3.35 dB)[cite: 89].*
+*Insight: Moving from squishing the image to patching the image yielded the single highest jump in performance (+3.35 dB).*
 
 ---
 ## Qualitative Visual Results
@@ -116,9 +116,3 @@ python train.py --dataset path/to/Rain100L --batch_size 4
 
 # Run inference
 python test.py --input path/to/test_images --weights best_model.pth
-
-
-## Authors & Acknowledgements
-* **Naman Singh** 
-* **Raunak Anand** 
-* **Visvjit Kumar Singh** 
