@@ -90,13 +90,13 @@ To prove the efficacy of our pipeline upgrades, we evaluated the individual cont
 The unified DerainNet pipeline effectively removes dense rain streaks across highly varied background textures while successfully preserving high-frequency edge details and accurate color saturation.
 
 ### Arctic Expedition
-![Arctic Expedition Comparison](assets/Screenshot 2026-03-27 122808.jpg)
+![Arctic Expedition Comparison](assets/artic.png)
 
 ### Wildlife (Deer)
-![Deer Comparison](assets/Screenshot 2026-03-27 122816.jpg)
+![Deer Comparison](assets/deer.png)
 
 ### Underwater Marine Life
-![Fish Comparison](assets/Screenshot 2026-03-27 122824.jpg)
+![Fish Comparison](assets/green.png)
 
 ### Horses in Field
 ![Horses Comparison](assets/Screenshot 2026-03-27 122840.jpg)
