@@ -99,7 +99,7 @@ The unified DerainNet pipeline effectively removes dense rain streaks across hig
 ![Fish Comparison](assets/green.png)
 
 ### Horses in Field
-![Horses Comparison](assets/Screenshot 2026-03-27 122840.jpg)
+![Horses Comparison](assets/horse.png)
 
 ## Usage & Installation
 
