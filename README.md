@@ -122,3 +122,10 @@ python train.py --dataset path/to/Rain100L --batch_size 4
 
 # Run inference
 python test.py --input path/to/test_images --weights best_model.pth
+
+```
+## 👨‍💻 Authors
+
+- Naman Singh  
+- Raunak Anand  
+- Visvjit Kumar Singh  
